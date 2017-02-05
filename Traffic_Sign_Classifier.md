@@ -261,26 +261,25 @@ Rebalancing the data prevent the model from being biaised towards classes that a
 
 
 ```python
-n_classes = np.unique(y_train).shape[0]
-n_examples_per_class = 5000
-
-for c in np.unique(y_train):
-    indexes = np.where(y_train == c)[0]
-    n_new_examples = n_examples_per_class-indexes.shape[0]
-    if n_new_examples > 0:
-        new_samples_indexes = np.random.choice(indexes, n_new_examples, replace=True)
-        X_train_new = X_train[new_samples_indexes]
-        y_train_new = y_train[new_samples_indexes]
-        for i in range(n_new_examples):
-            x_shift = np.random.randint(low=-2, high=+2)
-            y_shift = np.random.randint(low=-2, high=+2)
-            rotation_angle = np.random.randint(low=-10, high=+10)
-            scale_factor = np.random.uniform(low=.9, high=1.1)
-            X_train_new[i,:,:,:] = scale(X_train_new[i,:,:,:], scale_factor)
-            X_train_new[i,:,:,:] = rotate(X_train_new[i,:,:,:], rotation_angle)
-            X_train_new[i,:,:,:] = shift(X_train_new[i,:,:,:], x_shift, y_shift)
-        X_train = np.append(X_train, X_train_new, axis=0)
-        y_train = np.append(y_train, y_train_new, axis=0)
+def rebalance(X, y, n_examples_per_class):
+    for c in np.unique(y):
+        indexes = np.where(y == c)[0]
+        n_new_examples = n_examples_per_class-indexes.shape[0]
+        if n_new_examples > 0:
+            new_samples_indexes = np.random.choice(indexes, n_new_examples, replace=True)
+            X_new = X[new_samples_indexes]
+            y_new = y[new_samples_indexes]
+            for i in range(n_new_examples):
+                x_shift = np.random.randint(low=-2, high=+2)
+                y_shift = np.random.randint(low=-2, high=+2)
+                rotation_angle = np.random.randint(low=-10, high=+10)
+                scale_factor = np.random.uniform(low=.9, high=1.1)
+                X_new[i,:,:,:] = scale(X_new[i,:,:,:], scale_factor)
+                X_new[i,:,:,:] = rotate(X_new[i,:,:,:], rotation_angle)
+                X_new[i,:,:,:] = shift(X_new[i,:,:,:], x_shift, y_shift)
+            X = np.append(X, X_new, axis=0)
+            y = np.append(y, y_new, axis=0)
+    return X, y
 ```
 
 ##### Preprocessing
@@ -290,13 +289,11 @@ This has the advantage to reduce the dimension and allows the model to be more i
 
 
 ```python
-r = 0.299
-g = 0.587
-b = 0.114
-X_train = X_train[:,:,:,0]*r + X_train[:,:,:,1]*g + X_train[:,:,:,2]*b
-X_test = X_test[:,:,:,0]*r + X_test[:,:,:,1]*g + X_test[:,:,:,2]*b
-X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], X_train.shape[2], 1))
-X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], X_test.shape[2], 1))
+def convert_to_grayscale(X):
+    r = 0.299
+    g = 0.587
+    b = 0.114
+    return (X[:,:,:,0]*r + X[:,:,:,1]*g + X[:,:,:,2]*b).reshape((X.shape[0], X.shape[1], X.shape[2], 1))
 ```
 
 Local normalisation (image by image).  
@@ -304,12 +301,12 @@ It makes the model learn faster.
 
 
 ```python
-for i in range(X_train.shape[0]):
-    X_train[i] -= X_train[i].mean()
-    X_train[i] /= X_train[i].std()
-for i in range(X_test.shape[0]):
-    X_test[i] -= X_test[i].mean()
-    X_test[i] /= X_test[i].std()
+def normalize(X):
+    X_normalized = X.copy()
+    for i in range(X_normalized.shape[0]):
+        X_normalized[i] -= X_normalized[i].mean()
+        X_normalized[i] /= X_normalized[i].std()
+    return X_normalized
 ```
 
 ### Split Data into Training, Validation and Testing Sets
@@ -359,6 +356,25 @@ X_valid = X_train[valid_indexes]
 y_valid = y_train[valid_indexes]
 X_train = X_train[train_indexes]
 y_train = y_train[train_indexes]
+```
+
+Apply preprocessing
+
+
+```python
+# here we apply previously mentionned preprocessing techniques
+n_classes = np.unique(y_train).shape[0]
+n_examples_per_class = 5000
+
+X_train, y_train = rebalance(X_train, y_train, n_examples_per_class)
+
+X_train = convert_to_grayscale(X_train)
+X_valid = convert_to_grayscale(X_valid)
+X_test = convert_to_grayscale(X_test)
+
+X_train = normalize(X_train)
+X_valid = normalize(X_valid)
+X_test = normalize(X_test)
 ```
 
 To finish, we shuffle the data.
@@ -529,49 +545,49 @@ with tf.Session() as sess:
     Training...
     
     EPOCH 1 ...
-    Train Accuracy = 0.855
-    Validation Accuracy = 0.855
+    Train Accuracy = 0.859
+    Validation Accuracy = 0.880
     
     EPOCH 2 ...
-    Train Accuracy = 0.916
-    Validation Accuracy = 0.912
+    Train Accuracy = 0.922
+    Validation Accuracy = 0.927
     
     EPOCH 3 ...
-    Train Accuracy = 0.939
-    Validation Accuracy = 0.934
+    Train Accuracy = 0.947
+    Validation Accuracy = 0.944
     
     EPOCH 4 ...
-    Train Accuracy = 0.951
-    Validation Accuracy = 0.945
+    Train Accuracy = 0.955
+    Validation Accuracy = 0.952
     
     EPOCH 5 ...
-    Train Accuracy = 0.959
-    Validation Accuracy = 0.953
-    
-    EPOCH 6 ...
-    Train Accuracy = 0.963
+    Train Accuracy = 0.961
     Validation Accuracy = 0.957
     
+    EPOCH 6 ...
+    Train Accuracy = 0.966
+    Validation Accuracy = 0.961
+    
     EPOCH 7 ...
-    Train Accuracy = 0.967
+    Train Accuracy = 0.969
     Validation Accuracy = 0.960
     
     EPOCH 8 ...
-    Train Accuracy = 0.970
-    Validation Accuracy = 0.961
+    Train Accuracy = 0.971
+    Validation Accuracy = 0.960
     
     EPOCH 9 ...
-    Train Accuracy = 0.973
+    Train Accuracy = 0.972
     Validation Accuracy = 0.964
     
     EPOCH 10 ...
     Train Accuracy = 0.974
-    Validation Accuracy = 0.964
+    Validation Accuracy = 0.955
     
     Model saved
 
 
-We then evaluate the model on the test data and get a 94.7% test accuracy
+We then evaluate the model on the test data and get a 95.1% test accuracy
 
 
 ```python
@@ -584,7 +600,7 @@ with tf.Session() as sess:
     print("Test Accuracy = {:.3f}".format(test_accuracy))
 ```
 
-    Test Accuracy = 0.947
+    Test Accuracy = 0.951
 
 
 ---
@@ -608,6 +624,8 @@ All seem pretty simple to classify (good lighting conditions)
 
 
 ```python
+import os
+
 folder = 'data/new/'
 new_images_path = [folder + f for f in os.listdir(folder) if '.jpg' in f or '.jpeg' in f]
 n_new_images = len(new_images_path)
@@ -632,7 +650,7 @@ plt.show()
 ```
 
 
-![png](Traffic_Sign_Classifier_files/Traffic_Sign_Classifier_56_0.png)
+![png](Traffic_Sign_Classifier_files/Traffic_Sign_Classifier_58_0.png)
 
 
 ### Predict the Sign Type for Each Image
@@ -648,12 +666,8 @@ Load and preprocess new images
 
 
 ```python
-X_new = new_images[:,:,:,0]*r + new_images[:,:,:,1]*g + new_images[:,:,:,2]*b
-X_new = X_new.reshape((X_new.shape[0], X_new.shape[1], X_new.shape[2], 1))
-
-for i in range(X_new.shape[0]):
-    X_new[i] -= X_new[i].mean()
-    X_new[i] /= X_new[i].std()
+X_new = convert_to_grayscale(new_images)
+X_new = normalize(X_new)
 ```
 
 Calculates model predictions
@@ -673,9 +687,9 @@ sign_names[np.argmax(predictions, axis=1)]
 
 
 
-    array(['Pedestrians', 'Right-of-way at the next intersection', 'No entry',
-           'End of all speed and passing limits', 'Wild animals crossing',
-           'Speed limit (80km/h)'], 
+    array(['General caution', 'Right-of-way at the next intersection',
+           'No entry', 'End of all speed and passing limits',
+           'Wild animals crossing', 'Speed limit (50km/h)'], 
           dtype='<U50')
 
 
@@ -688,12 +702,11 @@ sign_names[np.argmax(predictions, axis=1)]
 ### For example, if the model predicted 1 out of 5 signs correctly, it's 20% accurate on these new images.
 ```
 
-The model got 4 image classes right out of 6, reaching a 66,7% accuracy.  
+The model got 5 image classes right out of 6, reaching a 83% accuracy.  
 Mistakes are:
 - 'Pedestrians' instead of 'Traffic signals' on the first image  
-- 'Speed limit (80km/h)' instead of 'Speed limit (50km/h)' on the last image  
 
-The classification error on this set of images if a lot worse than the error on the test set. 
+The classification error on this set of images if a bit worse than the error on the test set. 
 This may be due to overfitting.
 
 ### Output Top 5 Softmax Probabilities For Each Image Found on the Web
@@ -756,30 +769,30 @@ print(top_k_probas)
 print(top_k_answers)
 ```
 
-    [[  6.05272412e-01   2.10467592e-01   1.83230639e-01   1.02890260e-03
-        2.83982359e-07]
-     [  1.00000000e+00   2.02010408e-09   9.59717288e-12   2.52841910e-13
-        9.93651952e-19]
-     [  1.00000000e+00   3.18809098e-18   1.66487304e-18   5.59413718e-20
-        1.09453904e-20]
-     [  9.99999523e-01   4.12759846e-07   1.47629095e-07   6.04461739e-13
-        1.78366385e-16]
-     [  9.87917006e-01   1.20802121e-02   2.74482045e-06   1.33839615e-08
-        4.36331637e-09]
-     [  3.06997806e-01   3.06108028e-01   2.74446875e-01   5.00597544e-02
-        3.99801917e-02]]
-    [['Pedestrians' 'General caution' 'Road narrows on the right'
+    [[  6.89061344e-01   2.68865198e-01   2.32975539e-02   1.86628364e-02
+        1.09352128e-04]
+     [  1.00000000e+00   2.09056921e-11   2.13665094e-14   8.62484787e-16
+        2.71245890e-16]
+     [  1.00000000e+00   5.09096348e-17   2.06004468e-17   2.28961073e-20
+        2.11101097e-20]
+     [  1.00000000e+00   8.01842859e-09   3.68209351e-16   1.47541929e-16
+        4.52371478e-17]
+     [  9.99941826e-01   5.43677561e-05   3.51819017e-06   1.87486805e-07
+        8.19698371e-08]
+     [  7.64558613e-01   2.19942063e-01   1.11477273e-02   4.12690965e-03
+        8.73616300e-05]]
+    [['General caution' 'Right-of-way at the next intersection' 'Pedestrians'
       'Traffic signals' 'Double curve']
-     ['Right-of-way at the next intersection' 'Beware of ice/snow'
-      'Double curve' 'Pedestrians' 'General caution']
-     ['No entry' 'Turn right ahead' 'Stop' 'Priority road' 'No passing']
-     ['End of all speed and passing limits' 'End of speed limit (80km/h)'
-      'End of no passing' 'Speed limit (60km/h)'
-      'End of no passing by vehicles over 3.5 metric tons']
-     ['Wild animals crossing' 'Double curve' 'Road work'
-      'Right-of-way at the next intersection' 'Bicycles crossing']
-     ['Speed limit (80km/h)' 'Speed limit (50km/h)' 'Speed limit (60km/h)'
-      'Speed limit (120km/h)' 'Speed limit (30km/h)']]
+     ['Right-of-way at the next intersection' 'Pedestrians'
+      'Beware of ice/snow' 'General caution' 'Double curve']
+     ['No entry' 'No passing' 'End of no passing'
+      'End of all speed and passing limits' 'Stop']
+     ['End of all speed and passing limits' 'End of no passing' 'No entry'
+      'No passing' 'End of speed limit (80km/h)']
+     ['Wild animals crossing' 'Double curve' 'Slippery road' 'Road work'
+      'Bicycles crossing']
+     ['Speed limit (50km/h)' 'Speed limit (80km/h)' 'Speed limit (30km/h)'
+      'Speed limit (60km/h)' 'Speed limit (70km/h)']]
 
 
 This shows that the model was pretty sure on the image it got right (>99% certainty) whereas it was not on those it got wrong (60% and 30% certainty).
