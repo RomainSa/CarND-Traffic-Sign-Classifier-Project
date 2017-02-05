@@ -116,9 +116,9 @@ The architecture of the model is the following:
 | RELU					|												|
 | Max pooling	      	| 2x2 stride,  outputs 5x5x16 				|
 | Fully connected	      	| outputs 120 				|
-| DropOut 50%	      	| outputs 120 				|
+| Dropout 50%	      	|  50% 				|
 | Fully connected	      	| outputs 84 				|
-| DropOut 50%	      	| outputs 84 				|
+| Dropout	      	|  50% 				|
 | Fully connected	      	| outputs 43 				|
 
 It follows the architecture of the famous model LeNet5.
