@@ -178,7 +178,7 @@ This may be due to using grayscale: the shape of the two traffic sign are quite 
 
 The code for making predictions on my final model is located in cells 30 and 31 of the Ipython notebook.
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.69).  
+For the first image, the model is relatively sure that this is a General caution (probability of 0.69).  
 The top 5 predictions are the following:
 
 | Probability         	|     Prediction	        					| 
