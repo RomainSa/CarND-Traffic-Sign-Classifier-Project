@@ -90,7 +90,7 @@ We also performed a local normalisation (image by image, we substracted the mean
 
 ####2. Describe how, and identify where in your code, you set up training, validation and testing data. How much data was in each set? Explain what techniques were used to split the data into these sets. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, identify where in your code, and provide example images of the additional data)
 
-The code for splitting the data into training and validation sets is contained in cells 11 to 14 of the IPython notebook.  
+The code for splitting the data into training and validation sets is contained in cells 11 to 15 of the IPython notebook.  
 
 In order to divide the training set into a training and validation sets, we must first split it by track.   
 A track is a sequence of 30 images that are highly correlated (pictures taken at a few seconds of interval).  
@@ -102,10 +102,26 @@ To finish, we shuffle the data.
 
 ####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
-The code for my final model is located in the cells 15 to 18 of the ipython notebook. 
+The code for my final model is located in the cells 16 to 18 of the ipython notebook. 
 
-We use an implementation of LeNet5.
-It is a simple model that solved the handwritten digits classification problem, which is close to ours (low-resolution images to be classified in a small number of classes).
+The architecture of the model is the following:
+
+| Layer         		|     Description	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| Input         		| 32x32x1 Grayscale image   							| 
+| Convolution 5x5     	| 1x1 stride, same padding, outputs 28x28x6 	|
+| RELU					|												|
+| Max pooling	      	| 2x2 stride,  outputs 14x14x6 				|
+| Convolution 5x5     	| 1x1 stride, same padding, outputs 10x10x16 	|
+| RELU					|												|
+| Max pooling	      	| 2x2 stride,  outputs 5x5x16 				|
+| Fully connected	      	| outputs 120 				|
+| DropOut 50%	      	| outputs 120 				|
+| Fully connected	      	| outputs 84 				|
+| DropOut 50%	      	| outputs 84 				|
+| Fully connected	      	| outputs 43 				|
+
+It follows the architecture of the famous model LeNet5.
 
 ####4. Describe how, and identify where in your code, you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
 
@@ -120,21 +136,13 @@ The code for calculating the accuracy of the model is located in cell 21 of the 
 
 My final model results were:
 * training set accuracy of 97.4% 
-* validation set accuracy of 96.4% 
-* test set accuracy of 94.7% 
+* validation set accuracy of 95.5% 
+* test set accuracy of 95.1% 
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to over fitting or under fitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+The model performs reasonnably well, with maybe a slight overfitting.
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
+We used an implementation of LeNet5.
+It is a simple model that solved the handwritten digits classification problem, which is close to ours (low-resolution images to be classified in a small number of classes).
 
 ###Test a Model on New Images
 
@@ -148,45 +156,38 @@ All seem pretty simple to classify (good lighting conditions)
 
 ####2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. Identify where in your code predictions were made. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
-The code for making predictions on my final model is located in cells 57 and 73 of the Ipython notebook.
+The code for making predictions on my final model is located in cells 22 to 28 of the Ipython notebook.
 
 Here are the results of the prediction:
 
 | Image			        |     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| Traffic signals      		| Pedestrians   									| 
+| Traffic signals      		| General caution   									| 
 | Right-of-way at the next intersection     			| Right-of-way at the next intersection 										|
 | No entry					| No entry											|
 | End of all speed and passing limits	      		| End of all speed and passing limits					 				|
 | Wild animals crossing			| Wild animals crossing      							|
-| Speed limit (50km/h)			| Speed limit (80km/h)      							|
+| Speed limit (50km/h)			| Speed limit (50km/h)      							|
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+The model got 5 image classes right out of 6, reaching a 83% accuracy.  
+The error is predicting 'General caution' instead of 'Traffic signals' on the first image.  
+This may be due to using grayscale: the shape of the two traffic sign are quite close when not considering their color.
+
 
 ####3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction and identify where in your code softmax probabilities were outputted. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
-The code for making predictions on my final model is located in cell 77 of the Ipython notebook.
+The code for making predictions on my final model is located in cells 30 and 31 of the Ipython notebook.
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.61).  
+For the first image, the model is relatively sure that this is a stop sign (probability of 0.69).  
 The top 5 predictions are the following:
 
 | Probability         	|     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| .61         			| Pedestrians   									| 
-| .21     				| General caution 										|
-| .18					| Road narrows on the right											|
-| < .01	      			| Traffic signals					 				|
+| .69         			| General caution   									| 
+| .27     				| Right-of-way at the next intersection 										|
+| .02					| Pedestrians											|
+| .02	      			| Traffic signals					 				|
 | < .01				    | Double curve      							|
 
-The images 2 to 5 all s
+We see that the right answer is in the top 5 result, even thought it has a really low probability.
 
-The top 5 predictions for the last images are the following:
-
-
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| .307         			| Speed limit (80km/h)   									| 
-| .306     				| Speed limit (50km/h) 										|
-| .27					| Speed limit (60km/h)											|
-| .05	      			| Speed limit (120km/h)					 				|
-| .04				    | Speed limit (30km/h)      							|
