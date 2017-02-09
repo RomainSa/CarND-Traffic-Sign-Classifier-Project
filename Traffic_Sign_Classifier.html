@@ -19367,6 +19367,75 @@ It is a simple model that solved the handwritten digits classification problem, 
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Its architecture is the following:</p>
+<table>
+<thead><tr>
+<th style="text-align:center">Layer</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Input</td>
+<td style="text-align:center">32x32x1 Grayscale image</td>
+</tr>
+<tr>
+<td style="text-align:center">Convolution 5x5</td>
+<td style="text-align:center">1x1 stride, same padding, outputs 28x28x6</td>
+</tr>
+<tr>
+<td style="text-align:center">RELU</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">Max pooling</td>
+<td style="text-align:center">2x2 stride,  outputs 14x14x6</td>
+</tr>
+<tr>
+<td style="text-align:center">Convolution 5x5</td>
+<td style="text-align:center">1x1 stride, same padding, outputs 10x10x16</td>
+</tr>
+<tr>
+<td style="text-align:center">RELU</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">Max pooling</td>
+<td style="text-align:center">2x2 stride,  outputs 5x5x16</td>
+</tr>
+<tr>
+<td style="text-align:center">Fully connected</td>
+<td style="text-align:center">outputs 120</td>
+</tr>
+<tr>
+<td style="text-align:center">Dropout 50%</td>
+<td style="text-align:center">50%</td>
+</tr>
+<tr>
+<td style="text-align:center">Fully connected</td>
+<td style="text-align:center">outputs 84</td>
+</tr>
+<tr>
+<td style="text-align:center">Dropout</td>
+<td style="text-align:center">50%</td>
+</tr>
+<tr>
+<td style="text-align:center">Fully connected</td>
+<td style="text-align:center">outputs 43</td>
+</tr>
+</tbody>
+</table>
+<p>So this model has (5x5+1)x6 + (5x5+1)x16 + (400+1)x120 + (120+1)x84 + (84+1)x43 = 62,511 parameters.<br>
+The first convolution layer will extract basic features while the second one will extract features of deeper complexity.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[18]:</div>
